@@ -10,6 +10,8 @@ from logic.propositions.semantics import (
     is_tautology,
     is_contradiction,
     is_satisfiable,
+    synthesize,
+    synthesize_cnf,
 )
 
 
@@ -304,4 +306,93 @@ def is_disjunctive_clause(f):
         f.root == "|"
         and is_disjunctive_clause(f.first)
         and is_disjunctive_clause(f.second)
+    )
+
+
+def test_synthesize(debug=False):
+    __test_synthesize(synthesize, True, debug)
+
+
+def test_sythesize_cnf(debug=False):
+    __test_synthesize(synthesize_cnf, False, debug)
+
+
+def __test_synthesize(synthesizer, dnf, debug):
+    all_variables1 = ["p"]
+    all_models1 = [{"p": False}, {"p": True}]
+    value_lists1 = [(False, False), (False, True), (True, False), (True, True)]
+
+    all_variables2 = ["p", "q"]
+    all_models2 = [
+        {"p": False, "q": False},
+        {"p": False, "q": True},
+        {"p": True, "q": False},
+        {"p": True, "q": True},
+    ]
+    value_lists2 = [
+        (True, False, False, True),
+        (True, True, True, True),
+        (False, False, False, False),
+    ]
+
+    all_variables3 = ["r1", "r12", "p37"]
+    all_models3 = [
+        {"r1": False, "r12": False, "p37": False},
+        {"r1": False, "r12": False, "p37": True},
+        {"r1": False, "r12": True, "p37": False},
+        {"r1": False, "r12": True, "p37": True},
+        {"r1": True, "r12": False, "p37": False},
+        {"r1": True, "r12": False, "p37": True},
+        {"r1": True, "r12": True, "p37": False},
+        {"r1": True, "r12": True, "p37": True},
+    ]
+    value_lists3 = [
+        (True, False, True, True, False, True, False, True),
+        (True, True, True, True, True, True, True, True),
+        (False, False, False, False, False, False, False),
+    ]
+
+    for all_variables, all_models, value_lists in [
+        [all_variables1, all_models1, value_lists1],
+        [all_variables2, all_models2, value_lists2],
+        [all_variables3, all_models3, value_lists3],
+    ]:
+        for all_values in value_lists:
+            if debug:
+                print(
+                    "Testing",
+                    synthesizer.__qualname__,
+                    "for variables",
+                    all_variables,
+                    "and model-values",
+                    all_values,
+                )
+                formula = synthesize(tuple(all_variables), all_values)
+                assert (
+                    type(formula) is Formula
+                ), "Expected a formula, got " + str(formula)
+                if dnf:
+                    assert is_dnf(formula), str(formula) + " should be a DNF"
+                else:
+                    assert is_cnf(formula), str(formula) + " should be a CNF"
+                assert formula.variables().issubset(set(all_variables))
+                for model, value in zip(all_models, all_values):
+                    assert evaluate(formula, frozendict(model)) == value, (
+                        str(formula)
+                        + " does not evaluate to "
+                        + str(value)
+                        + " on "
+                        + str(model)
+                    )
+
+
+def is_dnf(formula):
+    return is_conjunctive_clause(formula) or (
+        formula.root == "|" and is_dnf(formula.first) and is_dnf(formula.second)
+    )
+
+
+def is_cnf(formula):
+    return is_disjunctive_clause(formula) or (
+        formula.root == "&" and is_cnf(formula.first) and is_cnf(formula.second)
     )

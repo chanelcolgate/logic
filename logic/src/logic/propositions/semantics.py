@@ -274,3 +274,123 @@ def _synthesize_for_model(model: Model) -> Formula:
 
         formula = Formula("&", formula, second)
     return formula
+
+
+def synthesize(variables: Sequence[str], values: Iterable[bool]) -> Formula:
+    """Synthesizes a propositional formula in DNF over the given variable names,
+    that has the specified truth table.
+
+    Parameters:
+        variables: nonempty set of variable names for the synthesized formula.
+        values: iterable over truth values for the synthesized formula in every
+            possible model over the given variable names, in the order returned
+            by `all_models(variables)`.
+
+    Returns:
+        The synthesized formula.
+
+    Examples:
+        >>> formula = synthesize(['p', 'q'], [True, True, True, False])
+        >>> for model in all_models(['p', 'q']):
+                evaluate(formula, model)
+        True
+        True
+        True
+        False
+    """
+    assert len(variables) > 0
+    # TODO: Task 2.7
+    variables = list(variables)
+    rows = zip(all_models(variables), values)
+    disjuncts = [_synthesize_for_model(i[0]) for i in rows if i[1]]
+    if disjuncts:
+        formula = disjuncts.pop(0)
+        while disjuncts:
+            formula = Formula("|", formula, disjuncts.pop(0))
+    else:
+        var = Formula(variables.pop(0))
+        formula = Formula("&", var, Formula("~", var))
+        while variables:
+            second = Formula(variables.pop(0))
+            second = Formula("&", second, Formula("~", second))
+            formula = Formula("|", formula, second)
+    return formula
+
+
+def _synthesize_for_all_except_model(model: Model) -> Formula:
+    """Synthesizes a propositional formula in the form of a single disjunctive
+    clause that evaluates to `False` in the given model, and to `True` in
+    any other model over the same variable names.
+
+    Parameters:
+        model: model over a nonempty set of variable names, in which the
+            synthesized formula is to not hold.
+
+    Returns:
+        The synthesized formula.
+    """
+    assert is_model(model)
+    assert len(model.keys()) > 0
+    # TODO: Optional Task 2.8
+
+    variables = list(model.keys())
+
+    init = True
+    for i in variables:
+        if init:
+            if model[i]:
+                formula = Formula("~", Formula(i))
+                init = False
+            else:
+                formula = Formula(i)
+                init = False
+        else:
+            if model[i]:
+                first = Formula("~", Formula(i))
+            else:
+                first = Formula(i)
+            formula = Formula("|", first, formula)
+    return formula
+
+
+def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
+    """Synthesizes a propositional formula in CNF over the given variable names,
+    that has the specified truth table.
+
+    Parameters:
+        variables: nonempty set of variables names for the synthesized formula.
+        values: iterable over truth values for the synthesized formula in every
+            possible model over the given variable names, in the order returned
+            by `all_models(variables)`.
+
+    Returns:
+        The synthesized formula.
+
+    Example:
+        >>> formula = synthesize_cnf(['p', 'q'], [True, True, True, False])
+        >>> for model in all_models(['p', 'q']):
+        ...     evaluate(formula, model)
+        True
+        True
+        True
+        False
+    """
+    assert len(variables) > 0
+    # TODO: Optional Task 2.9
+    variables = list(variables)
+    rows = zip(all_models(variables), values)
+    conjuncts = [
+        _synthesize_for_all_except_model(i[0]) for i in rows if not i[1]
+    ]
+    if conjuncts:
+        formula = conjuncts.pop(0)
+        while conjuncts:
+            formula = Formula("&", formula, conjuncts.pop(0))
+    else:
+        var = Formula(variables.pop(0))
+        formula = Formula("|", var, Formula("~", var))
+        while variables:
+            second = Formula(variables.pop(0))
+            second = Formula("|", second, Formula("~", second))
+            formula = Formula("&", formula, second)
+    return formula
