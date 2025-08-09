@@ -8,7 +8,7 @@ body:
       description: ...
       placeholder: Implement the missing code for ...
       value: "Implement the missing code for ..."
-    validation:
+    validations:
       required: false
 
   - type: textarea
@@ -16,7 +16,7 @@ body:
     attributes:
       label: How do you do?
       description: ...
-    validation:
+    validations:
       required: false
 
   - type: dropdown
@@ -28,7 +28,7 @@ body:
         - small
         - medium
         - long
-    validation:
+    validations:
       required: false
 
   - type: textarea
@@ -38,5 +38,5 @@ body:
       description: ...
       placeholder: Unit tests (in ./logic/logic/test/propositions/test_syntax.py)
       value: "Unit tests (in ./logic/logic/test/propositions/test_syntax.py)"
-    validation:
+    validations:
       required: false
