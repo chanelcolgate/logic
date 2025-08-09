@@ -1,0 +1,42 @@
+name: Tassk Form
+description: A task form with different fields
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What is the task?
+      description: ...
+      placeholder: Implement the missing code for ...
+      value: "Implement the missing code for ..."
+    validation:
+      required: false
+
+  - type: textarea
+    id: actions
+    attributes:
+      label: How do you do?
+      description: ...
+    validation:
+      required: false
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: Estimate?
+      description: ...
+      options:
+        - small
+        - medium
+        - long
+    validation:
+      required: false
+
+  - type: textarea
+    id: Tests
+    attributes:
+      label: Where is the tests?
+      description: ...
+      placeholder: Unit tests (in ./logic/logic/test/propositions/test_syntax.py)
+      value: "Unit tests (in ./logic/logic/test/propositions/test_syntax.py)"
+    validation:
+      required: false
