@@ -170,3 +170,37 @@ def test_parse_polish(debug=False):
         if debug:
             print("Testsing polish parsing of formula ", polish)
         assert Formula.parse_polish(polish).polish() == polish
+
+
+# Tests for Chapter 3
+def test_repr_all_operators(debug=False):
+    if debug:
+        print("Testing representation of formula '(x12+x12)'")
+    assert str(Formula("+", Formula("x12"), Formula("x12"))) == "(x12+x12)"
+    assert str(Formula("-|", Formula("T"), Formula("F"))) == "(T-|F)"
+    assert str(Formula("-&", Formula("p"), Formula("p"))) == "(p-&p)"
+    assert str(Formula("<->", Formula("p"), Formula("p"))) == "(p<->p)"
+    assert (
+        str(Formula("<->", Formula("p"), Formula("~", Formula("p"))))
+        == "(p<->~p)"
+    )
+    assert (
+        str(Formula("~", Formula("-&", Formula("p"), Formula("q7"))))
+        == "~(p-&q7)"
+    )
+    assert (
+        str(
+            Formula(
+                "<->",
+                Formula("~", Formual("+", Formula("p"), Formula("q"))),
+                Formula(
+                    "<->",
+                    Formula("~", Formula("q")),
+                    Formula("~", Formula("p")),
+                ),
+            )
+        )
+        == "(~(p+q)<->(~q<->~p))"
+    )
+    assert str(Formula()) == "(~(p1+q)|(~q-&~p))"
+    assert str(Formula()) == "(~(p1+q)|(~q-&~p))"

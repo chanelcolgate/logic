@@ -381,3 +381,65 @@ class Formula:
         """
         # Optional Task 1.8
         return Formula._parse_polish_prefix(string)[0]
+
+    def substitute_variables(
+        self, substitution_map: Mapping[str, Formula]
+    ) -> Formula:
+        """Substitues in the current formula, each variable name `v` that is a
+        key in `substitution_map` with the formula `substitution_map[v]`.
+
+        Parameters:
+            substitution_map: mapping defining the substitutions to be
+                performed.
+
+        Returns:
+            The formula resulting from performing all substitutions. Only
+            variable name occurrences originating in the current formula are
+            substituted (i.e., variable name occurrences originating in one of
+            the specified substituions are not subjected to additional
+            substituions).
+
+        Examples:
+            >>> Formula.parse('((p->p)|r)').substitute_variables(
+            ...     {'p': Formula.parse('(q&r)'), 'r': Formula.parse('p')}
+            )
+            (((q&r)->(q&r))|p)
+        """
+        for variable in substitution_map:
+            assert is_variable(variable)
+        # TODO: Task 3.3
+
+    def substitute_operators(
+        self, substitution_map: Mapping[str, Formula]
+    ) -> Formula:
+        """Substitues in the current formula, each constant or operator `op`
+        that is a key in `substitution_map` with the formula
+        `substituion_map[op]` applied to its (zero or one or two) operands,
+        where the first operand is used for every occurrence of 'p' in the
+        formula and the second for every occurrence of 'q'.
+
+        Parameters:
+            substituion_map: mapping defining the substitutions to be
+                performed.
+
+        Returns:
+            The formula resulting from performing all substitutions. Only
+            operator occurrences originating in the current formula are
+            substituted (i.e., operator occurrences originating in one of the
+            specified substitutions are not subjected to additional
+            substitutions).
+
+        Examples:
+            >>> Formula.parse('((x&y)&~z)').substitute_operators(
+            ...     {'&': Formula.parse('~(~p|~q)')}
+            )
+            ~(~~(~x|~y)|~~z)
+        """
+        for operator in substitution_map:
+            assert (
+                is_constant(operator)
+                or is_unary(operator)
+                or is_binary(operator)
+            )
+            assert substituion_map[operator].variables().issubset({"p", "q"})
+        # TODO: Task 3.4
