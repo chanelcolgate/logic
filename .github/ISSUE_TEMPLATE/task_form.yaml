@@ -4,8 +4,7 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: What is the task?
-      description: ...
+      label: Description
       placeholder: Implement the missing code for ...
       value: "Implement the missing code for ..."
     validations:
@@ -14,16 +13,14 @@ body:
   - type: textarea
     id: actions
     attributes:
-      label: How do you do?
-      description: ...
+      label: Actions
     validations:
       required: false
 
   - type: dropdown
     id: estimate
     attributes:
-      label: Estimate?
-      description: ...
+      label: Estimate
       options:
         - small
         - medium
@@ -34,9 +31,8 @@ body:
   - type: textarea
     id: Tests
     attributes:
-      label: Where is the tests?
-      description: ...
-      placeholder: Unit tests (in ./logic/logic/test/propositions/test_syntax.py)
-      value: "Unit tests (in ./logic/logic/test/propositions/test_syntax.py)"
+      label: Tests
+      placeholder: Unit tests (in `./logic/logic/test/propositions/test_syntax.py`)
+      value: "Unit tests (in `./logic/logic/test/propositions/test_syntax.py`)"
     validations:
       required: false
