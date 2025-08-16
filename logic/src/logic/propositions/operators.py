@@ -14,6 +14,16 @@ def to_not_and_or(formula: Formula) -> Formula:
         contains no constants or operators beyond `'~'`, `'&'` and `'|'`
     """
     # TODO: Task 3.5
+    sub_map = {
+        "T": Formula.parse("(p|~p)"),
+        "F": Formula.parse("(p&~p)"),
+        "->": Formula.parse("(~p|q)"),
+        "+": Formula.parse("((p|q)&~(p&q))"),
+        "-&": Formula.parse("~(p&q)"),
+        "-|": Formula.parse("~(p|q)"),
+        "<->": Formula.parse("((~p|q)&(~q|p))"),
+    }
+    return Formula.substitute_operators(formula, sub_map)
 
 
 def to_not_and(formula: Formula) -> Formula:
