@@ -457,3 +457,52 @@ class Formula:
             )
             assert substitution_map[operator].variables().issubset({"p", "q"})
         # TODO: Task 3.4
+        substitution_map = {
+            operator: substitution_map[operator]
+            for operator in substitution_map
+            if operator in Formula.operators(self)
+        }
+        if substitution_map:
+            if is_constant(str(self)):
+                return substitution_map[str(self)]
+            else:
+                if is_unary(self.root):
+                    if self.root in substitution_map:
+                        schema = substitution_map[self.root]
+                        first = Formula.substitute_operators(
+                            self.first, substitution_map
+                        )
+                        self = Formula.substitute_variables(
+                            schema, {"p": first}
+                        )
+                    else:
+                        self = Formula(
+                            self.root,
+                            Formula.substitute_operators(
+                                self.first, substitution_map
+                            ),
+                        )
+
+                if is_binary(self.root):
+                    if self.root in substitution_map:
+                        schema = substitution_map[self.root]
+                        first = Formula.substitute_operators(
+                            self.first, substitution_map
+                        )
+                        second = Formula.substitute_operators(
+                            self.second, substitution_map
+                        )
+                        self = Formula.substitute_variables(
+                            schema, {"p": first, "q": second}
+                        )
+                    else:
+                        self = Formula(
+                            self.root,
+                            Formula.substitute_operators(
+                                self.first, substitution_map
+                            ),
+                            Formula.substitute_operators(
+                                self.second, substitution_map
+                            ),
+                        )
+        return self

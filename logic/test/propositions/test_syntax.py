@@ -206,7 +206,7 @@ def test_parse_polish(debug=False):
 #     assert str(Formula()) == "(~(p1+q)|(~q-&~p))"
 
 
-def test_substitue_variables(debug=False):
+def test_substitute_variables(debug=False):
     tests = [
         ("v", {}, "v"),
         ("v", {"v": "p"}, "p"),
@@ -236,3 +236,46 @@ def test_substitue_variables(debug=False):
         d = {k: Formula.parse(d[k]) for k in d}
         a = str(f.substitute_variables(frozendict(d)))
         assert a == r, "Incorrect answer:" + a
+
+
+def test_substitute_operators(debug=False):
+    tests = [
+        ("v", {}, "v"),
+        ("(v|w)", {"|": "(~p->q)"}, "(~v->w)"),
+        ("(T|~F)", {"|": "(~p->q)"}, "(~T->~F)"),
+        ("(x|(y|z))", {"|": "(~p->q)"}, "(~x->(~y->z))"),
+        ("(x->y)", {"->": "(p&(q|p))"}, "(x&(y|x))"),
+        ("(q->r)", {"->": "(p&(q|p))"}, "(q&(r|q))"),
+        (
+            "((p1|~p2)&(p3|T))",
+            {"|": "(q&p)", "&": "~(p->q)"},
+            "~((~p2&p1)->(T&p3))",
+        ),
+        ("(x&(y|z))", {"&": "(q|p)"}, "((y|z)|x)"),
+        ("~x", {"~": "(p->F)"}, "(x->F)"),
+        # (
+        #     "~(x->~x)",
+        #     {"~": "(p-|p)", "->": "(~p|q)"},
+        #     "((~x|(x-|x))-|(~x|(x-|x)))",
+        # ),
+        ("((x&y)&~z)", {"&": "~(~p|~q)"}, "~(~~(~x|~y)|~~z)"),
+        ("T", {"T": "(p|~p)"}, "(p|~p)"),
+        ("(x-|~F)", {"F": "(p&~p)", "-|": "~(p|q)"}, "~(x|~(p&~p))"),
+        (
+            "((x+y)+x)",
+            {"+": "~((p&q)|(~p&~q))"},
+            "~((~((x&y)|(~x&~y))&x)|(~~((x&y)|(~x&~y))&~x))",
+        ),
+    ]
+    for f, d, r in tests:
+        if debug:
+            print(
+                "Testing substituting operators according to ",
+                d,
+                " in formula ",
+                f,
+            )
+        f = Formula.parse(f)
+        d = {k: Formula.parse(d[k]) for k in d}
+        a = str(f.substitute_operators(frozendict(d)))
+        assert a == r, "Incorrect answer: " + a
