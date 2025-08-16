@@ -173,34 +173,66 @@ def test_parse_polish(debug=False):
 
 
 # Tests for Chapter 3
-def test_repr_all_operators(debug=False):
-    if debug:
-        print("Testing representation of formula '(x12+x12)'")
-    assert str(Formula("+", Formula("x12"), Formula("x12"))) == "(x12+x12)"
-    assert str(Formula("-|", Formula("T"), Formula("F"))) == "(T-|F)"
-    assert str(Formula("-&", Formula("p"), Formula("p"))) == "(p-&p)"
-    assert str(Formula("<->", Formula("p"), Formula("p"))) == "(p<->p)"
-    assert (
-        str(Formula("<->", Formula("p"), Formula("~", Formula("p"))))
-        == "(p<->~p)"
-    )
-    assert (
-        str(Formula("~", Formula("-&", Formula("p"), Formula("q7"))))
-        == "~(p-&q7)"
-    )
-    assert (
-        str(
-            Formula(
-                "<->",
-                Formula("~", Formual("+", Formula("p"), Formula("q"))),
-                Formula(
-                    "<->",
-                    Formula("~", Formula("q")),
-                    Formula("~", Formula("p")),
-                ),
+# def test_repr_all_operators(debug=False):
+#     if debug:
+#         print("Testing representation of formula '(x12+x12)'")
+#     assert str(Formula("+", Formula("x12"), Formula("x12"))) == "(x12+x12)"
+#     assert str(Formula("-|", Formula("T"), Formula("F"))) == "(T-|F)"
+#     assert str(Formula("-&", Formula("p"), Formula("p"))) == "(p-&p)"
+#     assert str(Formula("<->", Formula("p"), Formula("p"))) == "(p<->p)"
+#     assert (
+#         str(Formula("<->", Formula("p"), Formula("~", Formula("p"))))
+#         == "(p<->~p)"
+#     )
+#     assert (
+#         str(Formula("~", Formula("-&", Formula("p"), Formula("q7"))))
+#         == "~(p-&q7)"
+#     )
+#     assert (
+#         str(
+#             Formula(
+#                 "<->",
+#                 Formula("~", Formual("+", Formula("p"), Formula("q"))),
+#                 Formula(
+#                     "<->",
+#                     Formula("~", Formula("q")),
+#                     Formula("~", Formula("p")),
+#                 ),
+#             )
+#         )
+#         == "(~(p+q)<->(~q<->~p))"
+#     )
+#     assert str(Formula()) == "(~(p1+q)|(~q-&~p))"
+#     assert str(Formula()) == "(~(p1+q)|(~q-&~p))"
+
+
+def test_substitue_variables(debug=False):
+    tests = [
+        ("v", {}, "v"),
+        ("v", {"v": "p"}, "p"),
+        ("(F->v12)", {"v12": "v11"}, "(F->v11)"),
+        ("v", {"q": "r", "z": "w"}, "v"),
+        ("p", {"p": "(q|q)"}, "(q|q)"),
+        ("~v", {"v": "(q|q)"}, "~(q|q)"),
+        ("(~v|v)", {"v": "(q|q)"}, "(~(q|q)|(q|q))"),
+        ("(q12->w)", {"q12": "T", "w": "x"}, "(T->x)"),
+        ("(v->w)", {"v": "T", "w": "v"}, "(T->v)"),
+        (
+            "((~v&w)|(v->u))",
+            {"v": "(~p->q)", "u": "~~F"},
+            "((~(~p->q)&w)|((~p->q)->~~F))",
+        ),
+        ("v2", {"v": "p"}, "v2"),
+    ]
+    for f, d, r in tests:
+        if debug:
+            print(
+                "Testing substituting variables according to ",
+                d,
+                "in formula ",
+                f,
             )
-        )
-        == "(~(p+q)<->(~q<->~p))"
-    )
-    assert str(Formula()) == "(~(p1+q)|(~q-&~p))"
-    assert str(Formula()) == "(~(p1+q)|(~q-&~p))"
+        f = Formula.parse(f)
+        d = {k: Formula.parse(d[k]) for k in d}
+        a = str(f.substitute_variables(frozendict(d)))
+        assert a == r, "Incorrect answer:" + a

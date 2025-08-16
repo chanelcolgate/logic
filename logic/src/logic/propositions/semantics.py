@@ -10,6 +10,7 @@ from logic.propositions.syntax import (
     is_binary,
     is_unary,
 )
+from logic.propositions.proofs import InferenceRule
 
 #: A model for propositional-logic formulas, a mapping from variable names to
 #: truth values
@@ -394,3 +395,40 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
             second = Formula("|", second, Formula("~", second))
             formula = Formula("&", formula, second)
     return formula
+
+
+def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
+    """Checks if the given inference rule holds in the given model.
+
+    Parameters:
+        rule: inference rule to check.
+        model: model to check in.
+
+    Returns:
+        `True` if the given inference rule holds in the given model, `False`
+        otherwise.
+
+    Examples:
+        >>> evaluate_inference(InferenceRule([Formula('p')], Formula('q')),
+        ...                    {'p': True, 'q': False})
+        False
+
+        >>> evaluate_inference(InferenceRule([Formula('p')], Formula('q')),
+        ...                    {'p': False, 'q': True})
+        True
+    """
+    assert is_model(model)
+    # TODO: Task 4.2
+
+
+def is_sound_inference(rule: InferenceRule) -> bool:
+    """Checks if the given inference rule is sound, i.e., whether its
+    conclusion is a semantically correct implication of its assumptions.
+
+    Parameters:
+        rule: inference rule to check.
+
+    Returns:
+        `True` if the given inference rule is sound, `False` otherwise.
+    """
+    # TODO: Task 4.3

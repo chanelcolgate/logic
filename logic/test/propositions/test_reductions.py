@@ -4,6 +4,7 @@ from logic.propositions.syntax import *
 from logic.propositions.semantics import *
 from logic.propositions.reductions import *
 
+
 TEST_GRAPHS = [
     ((1, frozenset()), True),  # empty graph
     ((3, frozenset()), True),  # empty graph

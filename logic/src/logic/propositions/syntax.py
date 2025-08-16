@@ -396,8 +396,8 @@ class Formula:
             The formula resulting from performing all substitutions. Only
             variable name occurrences originating in the current formula are
             substituted (i.e., variable name occurrences originating in one of
-            the specified substituions are not subjected to additional
-            substituions).
+            the specified substitutions are not subjected to additional
+            substitutions).
 
         Examples:
             >>> Formula.parse('((p->p)|r)').substitute_variables(
@@ -407,19 +407,33 @@ class Formula:
         """
         for variable in substitution_map:
             assert is_variable(variable)
-        # TODO: Task 3.3
+            # TODO: Task 3.3
+            if self == Formula(variable):
+                return substitution_map[variable]
+            elif is_unary(self.root):
+                return Formula(
+                    self.root,
+                    Formula.substitute_variables(self.first, substitution_map),
+                )
+            elif is_binary(self.root):
+                return Formula(
+                    self.root,
+                    Formula.substitute_variables(self.first, substitution_map),
+                    Formula.substitute_variables(self.second, substitution_map),
+                )
+        return self
 
     def substitute_operators(
         self, substitution_map: Mapping[str, Formula]
     ) -> Formula:
         """Substitues in the current formula, each constant or operator `op`
         that is a key in `substitution_map` with the formula
-        `substituion_map[op]` applied to its (zero or one or two) operands,
+        `substitution_map[op]` applied to its (zero or one or two) operands,
         where the first operand is used for every occurrence of 'p' in the
         formula and the second for every occurrence of 'q'.
 
         Parameters:
-            substituion_map: mapping defining the substitutions to be
+            substitution_map: mapping defining the substitutions to be
                 performed.
 
         Returns:
@@ -441,5 +455,5 @@ class Formula:
                 or is_unary(operator)
                 or is_binary(operator)
             )
-            assert substituion_map[operator].variables().issubset({"p", "q"})
+            assert substitution_map[operator].variables().issubset({"p", "q"})
         # TODO: Task 3.4
