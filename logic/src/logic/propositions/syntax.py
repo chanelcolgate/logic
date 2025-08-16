@@ -454,7 +454,7 @@ class Formula:
                 is_constant(operator)
                 or is_unary(operator)
                 or is_binary(operator)
-            )
+            ), str(operator)
             assert substitution_map[operator].variables().issubset({"p", "q"})
         # TODO: Task 3.4
         substitution_map = {
