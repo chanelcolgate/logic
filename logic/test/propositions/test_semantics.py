@@ -12,6 +12,7 @@ from logic.propositions.semantics import (
     is_satisfiable,
     synthesize,
     synthesize_cnf,
+    evaluate_inference,
 )
 
 
@@ -396,3 +397,59 @@ def is_cnf(formula):
     return is_disjunctive_clause(formula) or (
         formula.root == "&" and is_cnf(formula.first) and is_cnf(formula.second)
     )
+
+
+def test_evaluate_inference(debug=False):
+    from logic.propositions.proofs import InferenceRule
+
+    # Test 1
+    rule1 = InferenceRule(
+        [Formula.parse("p"), Formula.parse("q")], Formula.parse("r")
+    )
+    for model in all_models(["p", "q", "r"]):
+        if debug:
+            print(
+                "Testing evaluation of inference rule ",
+                rule1,
+                " in model ",
+                model,
+            )
+        assert (
+            evaluate_inference(rule1, frozendict(model)) == (not model["p"])
+            or (not model["q"])
+            or model["r"]
+        )
+
+    # Test 2
+    rule2 = InferenceRule([Formula.parse("(x|y)")], Formula.parse("x"))
+    for model in all_models(["x", "y"]):
+        if debug:
+            print(
+                "Testing evaluation of inference rule ",
+                rule2,
+                " in model ",
+                model,
+            )
+        assert (
+            evaluate_inference(rule2, frozendict(model)) == (not model["y"])
+            or model["x"]
+        )
+
+    # Test 3
+    rule3 = InferenceRule(
+        [Formula.parse(s) for s in ["(p->q)", "(q->r)"]], Formula.parse("r")
+    )
+    for model in all_models(["p", "q", "r"]):
+        if debug:
+            print(
+                "Testing evaluation of inference rule ",
+                rule3,
+                " in model ",
+                model,
+            )
+        assert (
+            evaluate_inference(rule3, frozendict(model))
+            == (model["p"] and not model["q"])
+            or (model["q"] and not model["r"])
+            or model["r"]
+        )

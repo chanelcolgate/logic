@@ -397,6 +397,17 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
     return formula
 
 
+def combine_formula(formulas: Iterable[Formula], operator: str) -> Formula:
+    if len(formulas) == 0:
+        return formulas
+    elif len(formulas) == 1:
+        return formulas[0]
+    else:
+        return Formula(
+            operator, formulas[0], combine_formula(formulas[1:], operator)
+        )
+
+
 def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
     """Checks if the given inference rule holds in the given model.
 
@@ -419,6 +430,13 @@ def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
     """
     assert is_model(model)
     # TODO: Task 4.2
+    if rule.assumptions:
+        formula = Formula(
+            "->", combine_formula(rule.assumptions, "&"), rule.conclusion
+        )
+    else:
+        formula = rule.conclusion
+    return evaluate(formula, model)
 
 
 def is_sound_inference(rule: InferenceRule) -> bool:
