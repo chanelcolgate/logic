@@ -91,7 +91,7 @@ class InferenceRule:
     def __hash__(self) -> int:
         return hash(str(self))
 
-    def variable(self) -> Set[str]:
+    def variables(self) -> Set[str]:
         """Finds all variable names in the current inference rule.
 
         Returns:
@@ -99,6 +99,10 @@ class InferenceRule:
             conclusion of the current inference rule.
         """
         # TODO: Task 4.1
+        variable_list = set()
+        for assumption in self.assumptions:
+            variable_list = variable_list | Formula.variables(assumption)
+        return variable_list | Formula.variables(self.conclusion)
 
     def specialize(
         self, specialization_map: SpecializationMap
