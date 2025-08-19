@@ -13,7 +13,10 @@ from logic.propositions.semantics import (
     synthesize,
     synthesize_cnf,
     evaluate_inference,
+    is_sound_inference,
 )
+from logic.propositions.proofs import InferenceRule
+from logic.propositions.axiomatic_systems import *
 
 
 def test_evaluate(debug=False):
@@ -400,7 +403,6 @@ def is_cnf(formula):
 
 
 def test_evaluate_inference(debug=False):
-    from logic.propositions.proofs import InferenceRule
 
     # Test 1
     rule1 = InferenceRule(
@@ -453,3 +455,53 @@ def test_evaluate_inference(debug=False):
             or (model["q"] and not model["r"])
             or model["r"]
         )
+
+
+def test_is_sound_inference(debug=False):
+    for assumptions, conclusion, tautological in [
+        [[], "(~p|p)", True],
+        [[], "(p|p)", False],
+        [[], "(~p|q)", False],
+        [["(~p|q)", "p"], "q", True],
+        [["(p|q)", "p"], "q", False],
+        [["(p|q)", "(~p|r)"], "(q|r)", True],
+        [["(p->q)", "(q->r)"], "r", False],
+        [["(p->q)", "(q->r)"], "(p->r)", True],
+        [["(x|y)"], "(y|x)", True],
+        [["x"], "(x|y)", True],
+        [["(x&y)"], "x", True],
+        [["x"], "(x&y)", False],
+    ]:
+        rule = InferenceRule(
+            [Formula.parse(a) for a in assumptions], Formula.parse(conclusion)
+        )
+        if debug:
+            print("Testing whether ", rule, " is sound")
+        assert is_sound_inference(rule) == tautological
+
+    for rule in [
+        MP,
+        I0,
+        I1,
+        D,
+        I2,
+        N,
+        NI,
+        NN,
+        R,
+        A,
+        NA1,
+        NA2,
+        O1,
+        O2,
+        NO,
+        T,
+        NF,
+        N_ALTERNATIVE,
+        AE1,
+        AE2,
+        OE,
+    ]:
+        if debug:
+            print("Testing that ", rule, " is sound")
+        assert is_sound_inference(rule)
