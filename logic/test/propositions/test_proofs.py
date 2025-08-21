@@ -291,4 +291,39 @@ def test_is_specialization_map(debug=False):
         candidate = InferenceRule([], Formula.parse(conclusion))
         if debug:
             print("Testing whether ", candidate, " is a special case of ", rule)
-        assert candidate.is_specialization_of(rule) == (instantiation_map_infix is not None)
+        assert candidate.is_specialization_of(rule) == (
+            instantiation_map_infix is not None
+        )
+
+
+# Tests for Proof
+
+
+def test_rule_for_line(debug=False):
+    x1 = Formula.parse("(x&y)")
+    x2 = Formula.parse("(p12->p13)")
+    x3 = Formula.parse("~~~~x")
+    xyxy = Formula.parse("((x|y)->(x|y))")
+    r1 = Formula.parse("r")
+    lemma = InferenceRule([x1, x3], r1)
+    p1 = Formula.parse("p")
+    p2 = Formula.parse("~~p")
+    p3 = Formula.parse("~~~~p")
+    pp = Formula.parse("(p->p)")
+    rule0 = InferenceRule([p2], p1)
+    rule1 = InferenceRule([p1, p2], p3)
+    rule2 = InferenceRule([], pp)
+    z = [None] * 6
+    z[0] = (Proof.Line(x1), None)
+    z[1] = (Proof.Line(x1, rule0, [0]), InferenceRule([x1], x1))
+    z[2] = (Proof.Line(x2, rule0, [0]), InferenceRule([x1], x2))
+    z[3] = (Proof.Line(x3, rule1, [2, 1]), InferenceRule([x2, x1], x3))
+    z[4] = (Proof.Line(p3, rule1, [2, 1]), InferenceRule([x2, x1], p3))
+    z[5] = (Proof.Line(xyxy, rule2, []), InferenceRule([], xyxy))
+    proof = Proof(lemma, {rule0, rule1, rule2}, [r for (r, a) in z])
+    if debug:
+        print("\nChecking rule_for_line...")
+    for i in range(len(z)):
+        if debug:
+            print("Checking rule of line ", str(i) + ":", proof.lines[i])
+        assert proof.rule_for_line(i) == z[i][1]
