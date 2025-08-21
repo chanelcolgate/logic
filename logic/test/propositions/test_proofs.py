@@ -205,3 +205,71 @@ def test_formula_specialization_map(debug=False):
                 assert is_variable(k)
                 assert type(dd[k]) is Formula
         assert dd == d, "expected " + str(d) + " got " + str(dd)
+
+
+rules = [
+    [
+        "(~p->~(q|T))",
+        "(~(x|y)->~((z&(w->~z))|T))",
+        [],
+        [],
+        {"p": "(x|y)", "q": "(z&(w->~z))"},
+    ],
+    ["(~p->~(q|T))", "(~(x|y)->((z&(w->~z))|T))", [], [], None],
+    [
+        "T",
+        "T",
+        ["(~p->~(q|T))"],
+        ["(~(x|y)->~((z&(w->~z))|T))"],
+        {"p": "(x|y)", "q": "(z&(w->~z))"},
+    ],
+    ["T", "T", ["(~p->~(q|T))"], [], None],
+    ["T", "T", [], ["(~(x|y)->~((z&(w->~z))|T))"], None],
+    ["F", "F", ["(~p->~(q|T))"], ["(~(x|y)->((z&(w->~z))|T))"], None],
+    ["p", "p", ["(p->q)"], ["(p->q)"], {"p": "p", "q": "q"}],
+    ["p", "p", ["(p->q)"], ["(p->q)", "(p->q)"], None],
+    ["p", "p", ["(p->q)", "(p->q)"], ["(p->q)"], None],
+    [
+        "p",
+        "p",
+        ["(p->q)", "(p->q)"],
+        ["(p->q)", "(p->q)"],
+        {"p": "p", "q": "q"},
+    ],
+    ["p", "r", ["(p->q)"], ["(r->q)"], {"p": "r", "q": "q"}],
+    ["p", "r", ["(p->q)"], ["(z->q)"], None],
+    [
+        "p",
+        "p1",
+        ["(p->q)", "(p&p)"],
+        ["(p1->r)", "(p1&p1)"],
+        {"p": "p1", "q": "r"},
+    ],
+    [
+        "p",
+        "p1",
+        ["(p->q)", "(p&p)"],
+        ["(p1->(r&~z))", "(p1&p1)"],
+        {"p": "p1", "q": "(r&~z)"},
+    ],
+    [
+        "p",
+        "~T",
+        ["(p->q)", "(p&p)"],
+        ["(~T->(r&~z))", "(~T&~T)"],
+        {"p": "~T", "q": "(r&~z)"},
+    ],
+    ["p", "T", ["(p->q)", "(p&p)"], ["(~T->(r&~z))", "(~T&~T)"], None],
+    ["p", "~T", ["(p->q)", "(p&p)"], ["(~T->(r&~z))", "(~F&~F)"], None],
+]
+
+
+def test_specialization_map(debug=False):
+    for t in rules:
+        g = InferenceRule([Formula.parse(f) for f in t[2]], Formula.parse(t[0]))
+        s = InferenceRule([Formula.parse(f) for f in t[3]], Formula.parse(t[1]))
+        d = None if t[4] is None else {v: Formula.parse(t[4][v]) for v in t[4]}
+        if debug:
+            print("Testing if and how rule ", s, "is a special case of ", g)
+        dd = g.specialization_map(s)
+        assert d == dd, "expected " + str(d) + " got " + str(dd)
