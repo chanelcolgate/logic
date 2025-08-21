@@ -192,6 +192,44 @@ class InferenceRule:
             in fact not a specialization of `general`.
         """
         # TODO: Task 4.5b
+        # 1. Break them down by tree structure until one operand is a variable,
+        # then close that branch.
+        map1 = dict()
+
+        if is_variable(general.root):
+            map1 = {general.root: specialization}
+            return map1
+        elif is_constant(general.root):
+            if general.root == specialization.root:
+                return {}
+            else:
+                return None
+
+        if general.root == specialization.root:
+            if is_unary(general.root):
+                map2 = InferenceRule._formula_specialization_map(
+                    general.first, specialization.first
+                )
+                if map2 is not None:
+                    map1 = InferenceRule._merge_specialization_maps(map1, map2)
+                    return map1
+                else:
+                    return None
+            elif is_binary(general.root):
+                map2 = InferenceRule._formula_specialization_map(
+                    general.first, specialization.first
+                )
+                map3 = InferenceRule._formula_specialization_map(
+                    general.second, specialization.second
+                )
+                if map2 is not None and map3 is not None:
+                    map1 = InferenceRule._merge_specialization_maps(map1, map2)
+                    map1 = InferenceRule._merge_specialization_maps(map1, map3)
+                    return map1
+                else:
+                    return None
+        else:
+            return None
 
     def specialization_map(
         self, specialization: InferenceRule
