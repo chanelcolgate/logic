@@ -273,3 +273,22 @@ def test_specialization_map(debug=False):
             print("Testing if and how rule ", s, "is a special case of ", g)
         dd = g.specialization_map(s)
         assert d == dd, "expected " + str(d) + " got " + str(dd)
+
+
+def test_is_specialization_map(debug=False):
+    # Test 1
+    rule = InferenceRule([], Formula.parse("(~p|p)"))
+    for conclusion, instantiation_map_infix in [
+        ["(~q|q)", {"p": "q"}],
+        ["(~p|p)", {"p": "p"}],
+        ["(~p4|p4)", {"p": "p4"}],
+        ["(~r7|r7)", {"p": "r7"}],
+        ["(~~(p|q)|~(p|q))", {"p": "~(p|q)"}],
+        ["(~p|q)", None],
+        ["(~p1|p2)", None],
+        ["(~~(p|p)|~(p|q))", None],
+    ]:
+        candidate = InferenceRule([], Formula.parse(conclusion))
+        if debug:
+            print("Testing whether ", candidate, " is a special case of ", rule)
+        assert candidate.is_specialization_of(rule) == (instantiation_map_infix is not None)
