@@ -151,10 +151,30 @@ class InferenceRule:
         if specialization_map1 is not None:
             for variable in specialization_map1:
                 assert is_variable(variable)
+        else:
+            return None
         if specialization_map2 is not None:
             for variable in specialization_map2:
                 assert is_variable(variable)
+        else:
+            return None
         # TODO: Task 4.5a
+        map1 = dict(specialization_map1)
+
+        intersection = set(specialization_map1.keys()) & set(
+            specialization_map2.keys()
+        )
+        for key in intersection:
+            if specialization_map1[key] != specialization_map2[key]:
+                return None
+
+        difference = set(specialization_map2.keys()) - set(
+            specialization_map1.keys()
+        )
+        for key in difference:
+            map1[key] = specialization_map2[key]
+
+        return map1
 
     @staticmethod
     def _formula_specialization_map(

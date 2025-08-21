@@ -91,3 +91,54 @@ def test_specialize(debug=False):
             assert general.specialize(d) == special, "got " + str(
                 general.specialize(d)
             )
+
+
+def test_merge_specialization_maps(debug=False):
+    for d1, d2, d in [
+        ({}, {}, {}),
+        ({}, None, None),
+        (None, {}, None),
+        (None, None, None),
+        ({"p": "q"}, {"r": "s"}, {"p": "q", "r": "s"}),
+        ({"p": "q"}, {}, {"p": "q"}),
+        ({}, {"p": "q"}, {"p": "q"}),
+        ({"p": "q"}, {"p": "r"}, None),
+        ({"p": "q"}, None, None),
+        (None, {"p": "q"}, None),
+        (
+            {"x": "p1", "y": "p2"},
+            {"x": "p1", "z": "p3"},
+            {"x": "p1", "y": "p2", "z": "p3"},
+        ),
+        ({"x": "p1", "y": "p2"}, {"x": "p1", "y": "p3"}, None),
+        (
+            {"x": "p1", "y": "p2"},
+            {"x": "p1", "y": "p2", "z": "p3"},
+            {"x": "p1", "y": "p2", "z": "p3"},
+        ),
+        (
+            {"x": "p1", "y": "p2", "z": "p3"},
+            {"x": "p1", "y": "p2"},
+            {"x": "p1", "y": "p2", "z": "p3"},
+        ),
+    ]:
+        if debug:
+            print("Testing merging of dictionaries", d1, d2)
+        dd = InferenceRule._merge_specialization_maps(
+            (
+                frozendict({v: Formula.parse(d1[v]) for v in d1})
+                if d1 is not None
+                else None
+            ),
+            (
+                frozendict({v: Formula.parse(d2[v]) for v in d2})
+                if d2 is not None
+                else None
+            ),
+        )
+        assert dd == (
+            {v: Formula.parse(d[v]) for v in d} if d is not None else None
+        ), ("got " + dd)
+
+
+specializations = [["p", "p", {"p": "p"}]]
