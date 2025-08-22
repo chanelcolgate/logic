@@ -51,3 +51,18 @@ def prove_I0() -> Proof:
         `~propositions.axiomatic_systems.D`.
     """
     # TODO: Task 4.8
+    return Proof(
+        InferenceRule([], Formula.parse("(p->p)")),
+        {MP, I1, D},
+        [
+            Proof.Line(
+                Formula.parse("((p->((p->p)->p))->((p->(p->p))->(p->p)))"),
+                D,
+                [],
+            ),
+            Proof.Line(Formula.parse("(p->((p->p)->p))"), I1, []),
+            Proof.Line(Formula.parse("((p->(p->p))->(p->p))"), MP, [1, 0]),
+            Proof.Line(Formula.parse("(p->(p->p))"), I1, []),
+            Proof.Line(Formula.parse("(p->p)"), MP, [3, 2]),
+        ],
+    )

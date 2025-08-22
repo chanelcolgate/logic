@@ -41,3 +41,6 @@ def test_prove_and_commutativity(debug=True):
         {A_RULE, AE1_RULE, AE2_RULE},
         debug,
     )
+
+def test_prove_IO(debug=False):
+    __test_prove_inference(prove_I0, I0, {MP, I1, D}, debug)
