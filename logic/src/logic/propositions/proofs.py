@@ -512,6 +512,33 @@ class Proof:
             statement via its inference rules, `False` otherwise.
         """
         # TODO: Task 4.6c
+        if self.lines:
+            each_line_is_valid = all(
+                self.is_line_valid(line) for line in range(len(self.lines))
+            )
+            conclusion_matches = (
+                self.statement.conclusion == self.lines[-1].formula
+            )
+
+            if not each_line_is_valid:
+                print(
+                    [
+                        (str(line) + ": " + str(self.is_line_valid(line)))
+                        for line in range(len(self.lines))
+                        if not self.is_line_valid(line)
+                    ]
+                )
+
+            if not conclusion_matches:
+                print(
+                    "statement "
+                    + str(self.statement.conclusion)
+                    + " != conclusion "
+                    + str(self.lines[-1].formula)
+                )
+
+            return each_line_is_valid and conclusion_matches
+        return False
 
 
 def prove_specialization(proof: Proof, specialization: InferenceRule) -> Proof:

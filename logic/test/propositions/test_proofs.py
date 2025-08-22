@@ -378,3 +378,194 @@ def test_is_line_valid(debug=True):
         if debug:
             print("Checking line ", str(i) + ":", proof.lines[i])
         assert proof.is_line_valid(i) == z[i][1]
+
+
+# Two proofs for use in various tests below
+
+R1 = InferenceRule(
+    [Formula.parse("(p|q)"), Formula.parse("(~p|r)")], Formula.parse("(q|r)")
+)
+R2 = InferenceRule([], Formula.parse("(~p|p)"))
+DISJUNCTION_COMMUTATIVITY_PROOF = Proof(
+    InferenceRule([Formula.parse("(x|y)")], Formula.parse("(y|x)")),
+    {R1, R2},
+    [
+        Proof.Line(Formula.parse("(x|y)")),
+        Proof.Line(Formula.parse("(~x|x)"), R2, []),
+        Proof.Line(Formula.parse("(y|x)"), R1, [0, 1]),
+    ],
+)
+R3 = InferenceRule([Formula.parse("(x|y)")], Formula.parse("(y|x)"))
+R4 = InferenceRule([Formula.parse("(x|(y|z))")], Formula.parse("((x|y)|z)"))
+DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF = Proof(
+    InferenceRule([Formula.parse("((x|y)|z)")], Formula.parse("(x|(y|z))")),
+    {R3, R4},
+    [
+        Proof.Line(Formula.parse("((x|y)|z)")),
+        Proof.Line(Formula.parse("(z|(x|y))"), R3, [0]),
+        Proof.Line(Formula.parse("((z|x)|y)"), R4, [1]),
+        Proof.Line(Formula.parse("(y|(z|x))"), R3, [2]),
+        Proof.Line(Formula.parse("((y|z)|x)"), R4, [3]),
+        Proof.Line(Formula.parse("(x|(y|z))"), R3, [4]),
+    ],
+)
+
+
+def test_is_valid(debug=False):
+    # Test variations on DISJUNCTION_COMMUTATIVITY_PROOF
+
+    proof = DISJUNCTION_COMMUTATIVITY_PROOF
+    if debug:
+        print(
+            "\nTesting validity of the following deductive proof:\n"
+            + str(proof)
+        )
+
+    assert proof.is_valid()
+
+    proof = Proof(
+        InferenceRule(
+            [Formula.parse("p"), Formula.parse("(x|y)")], Formula.parse("(y|x)")
+        ),
+        DISJUNCTION_COMMUTATIVITY_PROOF.rules,
+        DISJUNCTION_COMMUTATIVITY_PROOF.lines,
+    )
+
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_COMMUTATIVITY_PROOF.statement,
+        DISJUNCTION_COMMUTATIVITY_PROOF.rules,
+        [
+            Proof.Line(Formula.parse("(~x|x)"), R2, []),
+            Proof.Line(Formula.parse("(x|y)")),
+            Proof.Line(Formula.parse("(y|x)"), R1, [1, 0]),
+        ],
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_COMMUTATIVITY_PROOF.statement,
+        set(),
+        DISJUNCTION_COMMUTATIVITY_PROOF.lines,
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_COMMUTATIVITY_PROOF.statement,
+        DISJUNCTION_COMMUTATIVITY_PROOF.rules,
+        [],
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    proof = Proof(
+        InferenceRule([Formula.parse("(x|y)")], Formula.parse("(x|y)")),
+        DISJUNCTION_COMMUTATIVITY_PROOF.rules,
+        DISJUNCTION_COMMUTATIVITY_PROOF.lines,
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_COMMUTATIVITY_PROOF.statement,
+        {R1, InferenceRule([], Formula.parse("(~x|~x)"))},
+        DISJUNCTION_COMMUTATIVITY_PROOF.lines,
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_COMMUTATIVITY_PROOF.statement,
+        DISJUNCTION_COMMUTATIVITY_PROOF.rules,
+        [
+            Proof.Line(Formula.parse("(x|y)")),
+            Proof.Line(Formula.parse("(y|x)"), R1, [0, 0]),
+        ],
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    # Test variations on DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF
+    proof = DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert proof.is_valid()
+
+    proof = Proof(
+        InferenceRule([Formula.parse("(x|y)")], Formula.parse("(y|x)")),
+        DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF.rules,
+        DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF.lines,
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF.statement,
+        {R3, InferenceRule([], Formula("F"))},
+        DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF.lines,
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    proof = Proof(
+        DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF.statement,
+        DISJUNCTION_RIGHT_ASSOCIATIVITY_PROOF.rules,
+        [
+            Proof.Line(Formula.parse("((x|y)|z)")),
+            Proof.Line(Formula.parse("(x|(y|z))"), R3, [0]),
+        ],
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
+
+    # Test circular proof
+    R0 = InferenceRule([Formula.parse("(x|y)")], Formula.parse("(y|x)"))
+    proof = Proof(
+        InferenceRule([], Formula.parse("(x|y)")),
+        {InferenceRule([Formula.parse("(x|y)")], Formula.parse("(y|x)"))},
+        [
+            Proof.Line(Formula.parse("(y|x)"), R0, [1]),
+            Proof.Line(Formula.parse("(x|y)"), R0, [0]),
+        ],
+    )
+    if debug:
+        print(
+            "Testing validity of the following deductive proof:\n" + str(proof)
+        )
+    assert not proof.is_valid()
