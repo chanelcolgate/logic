@@ -327,3 +327,54 @@ def test_rule_for_line(debug=False):
         if debug:
             print("Checking rule of line ", str(i) + ":", proof.lines[i])
         assert proof.rule_for_line(i) == z[i][1]
+
+
+def test_is_line_valid(debug=True):
+    x1 = Formula.parse("x")
+    x2 = Formula.parse("~~x")
+    x3 = Formula.parse("~~~~x")
+    ff = Formula.parse("(F->F)")
+    r1 = Formula.parse("r")
+    lemma = InferenceRule([x1, x3], r1)
+    p1 = Formula.parse("p")
+    p2 = Formula.parse("~~p")
+    p3 = Formula.parse("~~~~p")
+    pp = Formula.parse("(p->p)")
+    rule0 = InferenceRule([p2], p1)
+    rule1 = InferenceRule([p1, p2], p3)
+    rule2 = InferenceRule([], pp)
+    rule3 = InferenceRule([p1], p1)
+    rule4 = InferenceRule([p1], p2)
+    z = [None] * 18
+    z[0] = (Proof.Line(x1), True)
+    z[1] = (Proof.Line(p1), False)
+    z[2] = (Proof.Line(x2), False)
+    z[3] = (Proof.Line(x1, rule0, [2]), True)
+    z[4] = (Proof.Line(p1, rule0, [2]), False)
+    z[5] = (Proof.Line(x3, rule1, [2]), False)
+    z[6] = (Proof.Line(x2, InferenceRule([p2], Formula.parse("p")), [5]), True)
+    z[7] = (Proof.Line(x2, rule0, [8]), False)
+    z[8] = (Proof.Line(x3, rule1, [0, 6]), True)
+    z[9] = (Proof.Line(x3, rule1, [4, 6]), False)
+    z[10] = (Proof.Line(x3, InferenceRule([], x3), []), False)
+    z[11] = (Proof.Line(ff, rule2, []), True)
+    z[12] = (Proof.Line(ff, rule0, []), False)
+    z[13] = (Proof.Line(p3, rule2, []), False)
+    z[14] = (Proof.Line(ff, rule2, [12]), False)
+    z[15] = (Proof.Line(x1, rule3, [0]), True)
+    z[16] = (Proof.Line(x1, rule3, [16]), False)
+    z[17] = (Proof.Line(x2, rule4, [15]), True)
+    proof = Proof(
+        lemma, {rule0, rule1, rule2, rule3, rule4}, [r for (r, _) in z]
+    )
+    if debug:
+        print(
+            "\nChecking proof line validity in proof of ",
+            lemma,
+            " using rules ",
+            {rule0, rule1},
+        )
+    for i in range(len(z)):
+        if debug:
+            print("Checking line ", str(i) + ":", proof.lines[i])
+        assert proof.is_line_valid(i) == z[i][1]

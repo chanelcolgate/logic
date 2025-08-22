@@ -456,6 +456,52 @@ class Proof:
         """
         assert line_number < len(self.lines)
         # TODO: Task 4.6b
+        line = self.lines[line_number]
+        if Proof.Line.is_assumption(line):
+            return any(
+                str(line) == str(assumption)
+                for assumption in self.statement.assumptions
+            )
+        else:
+            rule_was_given = any(line.rule == rule for rule in self.rules)
+            rule_matches_line = (
+                Proof.rule_for_line(self, line_number).is_specialization_of(
+                    line.rule
+                )
+                or Proof.rule_for_line(self, line_number) == line.rule
+            )
+            assumptions_are_prior = all(
+                assumption < line_number for assumption in line.assumptions
+            )
+            assumptions_match_line = all(
+                i == j
+                for i, j in zip(
+                    [self.lines[k].formula for k in line.assumptions],
+                    Proof.rule_for_line(self, line_number).assumptions,
+                )
+            )
+            if not rule_was_given:
+                print(f"rule was not given: {line}")
+            if not rule_matches_line:
+                print(line.rule)
+                print(Proof.rule_for_line(self, line_number))
+                print(f"rule does not match formula: {line}")
+            if not assumptions_are_prior:
+                print(f"assumptions are not found on prior line: {line}")
+            if not assumptions_match_line:
+                for i, j in zip(
+                    [self.lines[k].formula for k in line.assumptions],
+                    Proof.rule_for_line(self, line_number).assumptions,
+                ):
+                    print(i)
+                    print(j)
+                print(f"assumptions do not match formula: {line}")
+            return (
+                rule_was_given
+                and rule_matches_line
+                and assumptions_are_prior
+                and assumptions_match_line
+            )
 
     def is_valid(self) -> bool:
         """Checks if the current proof is a valid proof of its claimed statement

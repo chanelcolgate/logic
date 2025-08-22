@@ -192,7 +192,7 @@ def test_parse_polish(debug=False):
 #         str(
 #             Formula(
 #                 "<->",
-#                 Formula("~", Formual("+", Formula("p"), Formula("q"))),
+#                 Formula("~", Formula("+", Formula("p"), Formula("q"))),
 #                 Formula(
 #                     "<->",
 #                     Formula("~", Formula("q")),
